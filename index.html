@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplicar Aventura</title>
+    <style>
+        :root {
+            --color-primary: #FF6B35;
+            --color-secondary: #F7B801;
+            --color-success: #2EC4B6;
+            --color-error: #E71D36;
+            --color-bg: #FFE5D9;
+            --color-surface: #FFFFFF;
+            --color-text: #2C3E50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: var(--color-surface);
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .title {
+            font-size: 28px;
+            color: var(--color-primary);
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .progress-container {
+            margin-bottom: 24px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #E0E0E0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-success) 0%, var(--color-secondary) 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 32px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .question {
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .question-hint {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .answer-btn {
+            padding: 24px;
+            font-size: 28px;
+            font-weight: 800;
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-text);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .answer-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background: var(--color-bg);
+        }
+
+        .answer-btn:active {
+            transform: translateY(-2px);
+        }
+
+        .answer-btn.correct {
+            background: var(--color-success);
+            color: white;
+            animation: celebrate 0.6s ease;
+        }
+
+        .answer-btn.incorrect {
+            background: var(--color-error);
+            color: white;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            font-size: 18px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .feedback.incorrect {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-secondary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .achievement.show {
+            transform: translateX(0);
+        }
+
+        .achievement-title {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: var(--color-secondary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .rewards-section {
+            background: var(--color-bg);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .rewards-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .stars-display {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            font-size: 32px;
+        }
+
+        .star {
+            filter: grayscale(100%);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .star.earned {
+            filter: grayscale(0%);
+            opacity: 1;
+            animation: starPop 0.5s ease;
+        }
+
+        @keyframes starPop {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .big-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .big-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .big-btn:active {
+            transform: translateY(0);
+        }
+
+        .table-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .table-btn {
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            background: white;
+            border: 3px solid var(--color-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-primary);
+        }
+
+        .table-btn:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .table-btn.selected {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .results-icon {
+            font-size: 72px;
+            margin: 24px 0;
+        }
+
+        .results-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-bottom: 16px;
+        }
+
+        .results-stats {
+            background: var(--color-bg);
+            padding: 20px;
+            border-radius: 16px;
+            margin: 24px 0;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+            }
+            .question {
+                font-size: 36px;
+            }
+            .answer-btn {
+                font-size: 24px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Pantalla de inicio -->
+        <div class="start-screen" id="startScreen">
+            <div class="header">
+                <h1 class="title">🎮 Multiplicar Aventura</h1>
+                <p style="color: var(--color-text); font-size: 16px; margin-top: 8px;">¡Practica las tablas y gana premios!</p>
+            </div>
+
+            <div class="rewards-section">
+                <div class="rewards-title">🏆 Tu Progreso</div>
+                <div class="stars-display" id="totalStars">
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                </div>
+                <p style="text-align: center; margin-top: 8px; font-weight: 600; color: var(--color-text);">
+                    <span id="totalStarsCount">0</span> estrellas ganadas
+                </p>
+            </div>
+
+            <h3 style="margin: 24px 0 16px; color: var(--color-text); font-size: 18px;">Selecciona las tablas:</h3>
+            <div class="table-selector" id="tableSelector">
+                <button class="table-btn" data-table="2">Tabla del 2</button>
+                <button class="table-btn" data-table="3">Tabla del 3</button>
+                <button class="table-btn" data-table="4">Tabla del 4</button>
+                <button class="table-btn" data-table="5">Tabla del 5</button>
+                <button class="table-btn" data-table="6">Tabla del 6</button>
+                <button class="table-btn" data-table="7">Tabla del 7</button>
+                <button class="table-btn" data-table="8">Tabla del 8</button>
+                <button class="table-btn" data-table="9">Tabla del 9</button>
+                <button class="table-btn" data-table="10">Tabla del 10</button>
+            </div>
+
+            <button class="big-btn" id="startBtn">¡Empezar a Jugar! 🚀</button>
+        </div>
+
+        <!-- Pantalla de juego -->
+        <div class="game-screen" id="gameScreen">
+            <div class="header">
+                <span class="level-badge" id="levelBadge">Nivel 1</span>
+                <h1 class="title">🎮 Multiplicar Aventura</h1>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Puntos</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Racha</span>
+                    <span class="stat-value" id="streak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tiempo</span>
+                    <span class="stat-value" id="timer">60</span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Progreso</span>
+                    <span id="questionsCount">0/10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="rewards-section">
+                <div class="rewards-title">Estrellas de esta ronda</div>
+                <div class="stars-display" id="starsDisplay">
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                    <span class="star">⭐</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="question" id="question">5 × 7</div>
+                <div class="question-hint">¿Cuál es el resultado?</div>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <div class="answers-grid" id="answersGrid">
+                <button class="answer-btn">35</button>
+                <button class="answer-btn">42</button>
+                <button class="answer-btn">30</button>
+                <button class="answer-btn">28</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de resultados -->
+        <div class="results-screen hidden" id="resultsScreen">
+            <div class="results-icon" id="resultsIcon">🎉</div>
+            <h2 class="results-title" id="resultsTitle">¡Excelente!</h2>
+            
+            <div class="rewards-section">
+                <div class="rewards-title">Estrellas ganadas</div>
+                <div class="stars-display" id="resultsStars"></div>
+            </div>
+
+            <div class="results-stats">
+                <div class="result-item">
+                    <span>Puntuación Final:</span>
+                    <span id="finalScore">0</span>
+                </div>
+                <div class="result-item">
+                    <span>Respuestas Correctas:</span>
+                    <span id="correctAnswers">0/10</span>
+                </div>
+                <div class="result-item">
+                    <span>Mejor Racha:</span>
+                    <span id="bestStreak">0</span>
+                </div>
+                <div class="result-item">
+                    <span>Precisión:</span>
+                    <span id="accuracy">0%</span>
+                </div>
+            </div>
+
+            <button class="big-btn" id="playAgainBtn">¡Jugar de Nuevo! 🎮</button>
+        </div>
+    </div>
+
+    <div class="achievement" id="achievementNotification">
+        <div class="achievement-title" id="achievementTitle"></div>
+        <div class="achievement-desc" id="achievementDesc"></div>
+    </div>
+
+    <script>
+        // Estado del juego
+        let gameState = {
+            score: 0,
+            streak: 0,
+            bestStreak: 0,
+            currentQuestion: 0,
+            correctAnswers: 0,
+            totalQuestions: 10,
+            timeLeft: 60,
+            level: 1,
+            selectedTables: [],
+            totalStars: 0,
+            roundStars: 0,
+            timer: null
+        };
+
+        // Elementos del DOM
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const startBtn = document.getElementById('startBtn');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const tableSelector = document.getElementById('tableSelector');
+        const answersGrid = document.getElementById('answersGrid');
+        const questionElement = document.getElementById('question');
+        const scoreElement = document.getElementById('score');
+        const streakElement = document.getElementById('streak');
+        const timerElement = document.getElementById('timer');
+        const questionsCount = document.getElementById('questionsCount');
+        const progressFill = document.getElementById('progressFill');
+        const feedback = document.getElementById('feedback');
+        const levelBadge = document.getElementById('levelBadge');
+        const starsDisplay = document.getElementById('starsDisplay');
+        const totalStarsCount = document.getElementById('totalStarsCount');
+        const totalStarsDisplay = document.getElementById('totalStars');
+
+        let currentAnswer = 0;
+
+        // Inicializar
+        loadProgress();
+        updateTotalStarsDisplay();
+
+        // Selección de tablas
+        tableSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('table-btn')) {
+                e.target.classList.toggle('selected');
+            }
+        });
+
+        // Iniciar juego
+        startBtn.addEventListener('click', () => {
+            const selectedButtons = document.querySelectorAll('.table-btn.selected');
+            if (selectedButtons.length === 0) {
+                alert('¡Selecciona al menos una tabla para practicar!');
+                return;
+            }
+
+            gameState.selectedTables = Array.from(selectedButtons).map(btn => 
+                parseInt(btn.dataset.table)
+            );
+            
+            startScreen.classList.add('hidden');
+            gameScreen.style.display = 'block';
+            resetGame();
+            startTimer();
+            generateQuestion();
+        });
+
+        // Jugar de nuevo
+        playAgainBtn.addEventListener('click', () => {
+            resultsScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        });
+
+        // Reiniciar juego
+        function resetGame() {
+            gameState.score = 0;
+            gameState.streak = 0;
+            gameState.currentQuestion = 0;
+            gameState.correctAnswers = 0;
+            gameState.timeLeft = 60;
+            gameState.roundStars = 0;
+            updateUI();
+            updateStarsDisplay();
+        }
+
+        // Temporizador
+        function startTimer() {
+            clearInterval(gameState.timer);
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                timerElement.textContent = gameState.timeLeft;
+
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // Generar pregunta
+        function generateQuestion() {
+            if (gameState.currentQuestion >= gameState.totalQuestions) {
+                endGame();
+                return;
+            }
+
+            feedback.classList.remove('show');
+            
+            const table = gameState.selectedTables[
+                Math.floor(Math.random() * gameState.selectedTables.length)
+            ];
+            const multiplier = Math.floor(Math.random() * 10) + 1;
+            currentAnswer = table * multiplier;
+
+            questionElement.textContent = `${table} × ${multiplier}`;
+
+            generateAnswers(currentAnswer);
+        }
+
+        // Generar respuestas
+        function generateAnswers(correct) {
+            const answers = [correct];
+            
+            while (answers.length < 4) {
+                const offset = Math.floor(Math.random() * 20) - 10;
+                const wrongAnswer = correct + offset;
+                if (wrongAnswer > 0 && !answers.includes(wrongAnswer)) {
+                    answers.push(wrongAnswer);
+                }
+            }
+
+            // Mezclar respuestas
+            for (let i = answers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [answers[i], answers[j]] = [answers[j], answers[i]];
+            }
+
+            const buttons = answersGrid.querySelectorAll('.answer-btn');
+            buttons.forEach((btn, index) => {
+                btn.textContent = answers[index];
+                btn.className = 'answer-btn';
+                btn.disabled = false;
+            });
+        }
+
+        // Manejar respuesta
+        answersGrid.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('answer-btn') || e.target.disabled) return;
+
+            const userAnswer = parseInt(e.target.textContent);
+            const isCorrect = userAnswer === currentAnswer;
+
+            // Deshabilitar botones
+            const buttons = answersGrid.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                handleCorrectAnswer(e.target);
+            } else {
+                handleIncorrectAnswer(e.target);
+            }
+
+            gameState.currentQuestion++;
+            updateUI();
+
+            setTimeout(() => {
+                generateQuestion();
+            }, 1500);
+        });
+
+        // Respuesta correcta
+        function handleCorrectAnswer(button) {
+            button.classList.add('correct');
+            feedback.textContent = '🎉 ¡Correcto! ¡Muy bien!';
+            feedback.className = 'feedback correct show';
+
+            gameState.correctAnswers++;
+            gameState.streak++;
+            if (gameState.streak > gameState.bestStreak) {
+                gameState.bestStreak = gameState.streak;
+            }
+
+            const points = 10 + (gameState.streak * 5);
+            gameState.score += points;
+
+            // Logros por racha
+            if (gameState.streak === 5) {
+                showAchievement('🔥 ¡Racha de 5!', 'Estás en fuego');
+            } else if (gameState.streak === 10) {
+                showAchievement('🌟 ¡Racha de 10!', 'Eres increíble');
+            }
+
+            updateStarsInRound();
+        }
+
+        // Respuesta incorrecta
+        function handleIncorrectAnswer(button) {
+            button.classList.add('incorrect');
+            feedback.textContent = `❌ Incorrecto. La respuesta es ${currentAnswer}`;
+            feedback.className = 'feedback incorrect show';
+
+            gameState.streak = 0;
+        }
+
+        // Actualizar estrellas de la ronda
+        function updateStarsInRound() {
+            const accuracy = (gameState.correctAnswers / (gameState.currentQuestion + 1)) * 100;
+            let stars = 0;
+
+            if (accuracy >= 90) stars = 3;
+            else if (accuracy >= 70) stars = 2;
+            else if (accuracy >= 50) stars = 1;
+
+            gameState.roundStars = stars;
+            updateStarsDisplay();
+        }
+
+        // Actualizar visualización de estrellas
+        function updateStarsDisplay() {
+            const starElements = starsDisplay.querySelectorAll('.star');
+            starElements.forEach((star, index) => {
+                if (index < gameState.roundStars) {
+                    star.classList.add('earned');
+                } else {
+                    star.classList.remove('earned');
+                }
+            });
+        }
+
+        // Actualizar UI
+        function updateUI() {
+            scoreElement.textContent = gameState.score;
+            streakElement.textContent = gameState.streak;
+            questionsCount.textContent = `${gameState.currentQuestion}/${gameState.totalQuestions}`;
+            
+            const progress = (gameState.currentQuestion / gameState.totalQuestions) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        // Mostrar logro
+        function showAchievement(title, desc) {
+            const notification = document.getElementById('achievementNotification');
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementDesc').textContent = desc;
+            
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Finalizar juego
+        function endGame() {
+            clearInterval(gameState.timer);
+            gameScreen.style.display = 'none';
+            resultsScreen.classList.remove('hidden');
+
+            // Actualizar estrellas totales
+            gameState.totalStars += gameState.roundStars;
+            saveProgress();
+
+            // Mostrar resultados
+            const accuracy = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('correctAnswers').textContent = 
+                `${gameState.correctAnswers}/${gameState.totalQuestions}`;
+            document.getElementById('bestStreak').textContent = gameState.bestStreak;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+
+            // Icono y título según rendimiento
+            const resultsIcon = document.getElementById('resultsIcon');
+            const resultsTitle = document.getElementById('resultsTitle');
+            
+            if (accuracy >= 90) {
+                resultsIcon.textContent = '🏆';
+                resultsTitle.textContent = '¡Excelente!';
+            } else if (accuracy >= 70) {
+                resultsIcon.textContent = '⭐';
+                resultsTitle.textContent = '¡Muy bien!';
+            } else if (accuracy >= 50) {
+                resultsIcon.textContent = '👍';
+                resultsTitle.textContent = '¡Buen trabajo!';
+            } else {
+                resultsIcon.textContent = '💪';
+                resultsTitle.textContent = '¡Sigue practicando!';
+            }
+
+            // Mostrar estrellas ganadas
+            const resultsStars = document.getElementById('resultsStars');
+            resultsStars.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.textContent = '⭐';
+                if (i < gameState.roundStars) {
+                    star.classList.add('earned');
+                }
+                resultsStars.appendChild(star);
+            }
+        }
+
+        // Guardar progreso
+        function saveProgress() {
+            localStorage.setItem('multiplyGameStars', gameState.totalStars);
+        }
+
+        // Cargar progreso
+        function loadProgress() {
+            const savedStars = localStorage.getItem('multiplyGameStars');
+            if (savedStars) {
+                gameState.totalStars = parseInt(savedStars);
+            }
+        }
+
+        // Actualizar visualización de estrellas totales
+        function updateTotalStarsDisplay() {
+            totalStarsCount.textContent = gameState.totalStars;
+            const starElements = totalStarsDisplay.querySelectorAll('.star');
+            const fullGroups = Math.floor(gameState.totalStars / 5);
+            
+            starElements.forEach((star, index) => {
+                if (index < fullGroups) {
+                    star.classList.add('earned');
+                } else {
+                    star.classList.remove('earned');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
